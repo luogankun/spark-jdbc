@@ -17,7 +17,7 @@ version: 0.1
 The spark-jdbc assembly jar file can also be added to a Spark using the `--jars` command line option.  For example, to include it when starting the spark shell:
 
 ```
-$ bin/spark-shell --jars spark-jdbc_2.10-0.1.jar
+$ bin/spark-sql --jars spark-jdbc_2.10-0.1.jar
 ```
 
 ```sql
