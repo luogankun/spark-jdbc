@@ -1,6 +1,6 @@
 # Spark SQL JDBC Library
 
-A library for parsing and querying CSV data with [Spark SQL](http://spark.apache.org/docs/latest/sql-programming-guide.html).
+A library for parsing and querying JDBC data with [Spark SQL](http://spark.apache.org/docs/latest/sql-programming-guide.html).
 
 ## Requirements
 
