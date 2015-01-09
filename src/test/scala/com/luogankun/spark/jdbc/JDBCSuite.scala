@@ -37,7 +37,7 @@ class JDBCSuite extends FunSuite{
         |  where 'TBL_ID>8'
         |)""".stripMargin)
 
-    sql("SELECT * FROM jdbc_table").collect.foreach(println)
+    sql("SELECT TBL_NAME, DB_ID FROM jdbc_table").collect.foreach(println)
 
     assert(sql("SELECT * FROM jdbc_table").collect().size == 2 )
   }

@@ -13,7 +13,7 @@ import org.apache.spark.sql._
 /**
  * Created by spark on 15-1-4.
  */
-case class JDBCRelation(val jdbcProps:Map[String,String])(@transient val sqlContext:SQLContext) extends TableScan with Serializable{
+case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient val sqlContext:SQLContext) extends TableScan with Serializable{
   //jdbc
   val url = jdbcProps.getOrElse("url", sys.error("not valid url"))
   val user = jdbcProps.getOrElse("user", sys.error("not valid user"))
@@ -58,7 +58,7 @@ case class JDBCRelation(val jdbcProps:Map[String,String])(@transient val sqlCont
   lazy val buildScan = {
     val sql = "select " + queryColumns + " from " + jdbcTableName + " where " + "TBL_ID >= ? and TBL_ID <= ? AND " + where
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + sql)
-    val baseRDD = new JdbcRDD(sqlContext.sparkContext, getConnection, sql, 1, Integer.MAX_VALUE, numPartitions, flatValue)
+    val baseRDD = new JdbcRDD(sqlContext.sparkContext, getConnection, sql, 1, 10, numPartitions, flatValue)
     baseRDD
   }
 
@@ -129,7 +129,7 @@ object Resolver extends Serializable {
     fieldRs
   }
 
-  def resolveColumn(rs:ResultSet, columnName:String, resultType:String):Any = {
+  private def resolveColumn(rs:ResultSet, columnName:String, resultType:String):Any = {
     val column = resultType match {
       case "string" => rs.getString(columnName)
       case "int" => rs.getInt(columnName)
