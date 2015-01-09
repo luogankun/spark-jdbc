@@ -58,7 +58,7 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
   lazy val buildScan = {
     val sql = "select " + queryColumns + " from " + jdbcTableName + " where " + "TBL_ID >= ? and TBL_ID <= ? AND " + where
     println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + sql)
-    val baseRDD = new JdbcRDD(sqlContext.sparkContext, getConnection, sql, 1, 10, numPartitions, flatValue)
+    val baseRDD = new JdbcRDD(sqlContext.sparkContext, getConnection, sql, 1, Integer.MAX_VALUE, numPartitions, flatValue)
     baseRDD
   }
 
