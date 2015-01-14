@@ -6,14 +6,6 @@ A library for parsing and querying JDBC data with [Spark SQL](http://spark.apach
 
 This library requires Spark 1.2+
 
-## Linking
-You can link against this library in your program at the following coordiates:
-
-```
-groupId: com.luogankun.spark
-artifactId: spark-jdbc_2.10
-version: 0.1
-```
 The spark-jdbc assembly jar file can also be added to a Spark using the `--jars` command line option.  For example, to include it when starting the spark shell:
 
 ```
@@ -39,4 +31,8 @@ SELECT * FROM jdbc_table;
 
 ## Building From Source
 This library is built with [SBT](http://www.scala-sbt.org/0.13/docs/Command-Line-Reference.html), which is automatically downloaded by the included shell script. To build a JAR file simply run `sbt/sbt assembly` from the project root.
+
+##
+Support Database: Mysql&Oracle&DB2
+Support DataType: string&int&long&timestamp&date
 

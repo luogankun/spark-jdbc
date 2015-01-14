@@ -8,8 +8,6 @@ scalaVersion := "2.10.4"
 
 libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.2.0" % "provided"
 
-libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.30"
-
 resolvers += "Spark Staging Repository" at "https://repository.apache.org/content/repositories/orgapachespark-1038/"
 
 publishMavenStyle := true

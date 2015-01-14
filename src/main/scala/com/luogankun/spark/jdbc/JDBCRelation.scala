@@ -27,8 +27,8 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
   val registerTableSchame = jdbcProps.getOrElse("sparksql_table_schema",
     sys.error("not valid sparksql_table_schema"))
 
-  val where = jdbcProps.getOrElse("where", sys.error("not valid where"))
-  val numPartitions = jdbcProps.getOrElse("num_partitions", sys.error("not valid num_partitions")).toInt
+  val where = jdbcProps.getOrElse("where", "")
+  val numPartitions = jdbcProps.getOrElse("num_partitions", "5").toInt
 
   //parse
   val tempJDBCFields = extractJdbcSchema(jdbcTableSchema)
@@ -37,6 +37,20 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
   val jdbcTableFields = feedTypes(tempFieldRelation)
   val fieldsRelations = tableSchemaFieldMapping(jdbcTableFields,registerTableFields)
   val queryColumns = getQueryTargetColumns(jdbcTableFields)
+
+  var dbFlag = 0;  //1:mysql  2:oracle   3:db2
+  var driverName:String = ""  //jdbc driver name
+
+  if(url.matches("""^jdbc:mysql:.*""")) {
+    driverName = "com.mysql.jdbc.Driver"
+    dbFlag = 1
+  } else if(url.matches("""^jdbc:db2:.*""")) {
+    driverName = "com.ibm.db2.jcc.DB2Driver"
+    dbFlag = 3
+  } else if(url.matches("""^jdbc:oracle:thin:.*""")) {
+    driverName = "oracle.jdbc.driver.OracleDriver"
+    dbFlag = 2
+  }
 
 
   lazy val schema = {
@@ -48,6 +62,8 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
           case "string" => SchemaType(StringType, nullable = false)
           case "int" => SchemaType(IntegerType, nullable = false)
           case "long" => SchemaType(LongType, nullable = false)
+          case "timestamp" => SchemaType(TimestampType, nullable = false)
+          case "date" => SchemaType(DateType, nullable = false)
         }
         StructField(name,relatedType.dataType,relatedType.nullable)
       }
@@ -55,20 +71,15 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
     StructType(fields)
   }
 
-  lazy val buildScan = {
-    val sql = "select " + queryColumns + " from " + jdbcTableName + " where " + "TBL_ID >= ? and TBL_ID <= ? AND " + where
-    println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" + sql)
-    val baseRDD = new JdbcRDD(sqlContext.sparkContext, getConnection, sql, 1, Integer.MAX_VALUE, numPartitions, flatValue)
-    baseRDD
+   lazy val buildScan = {
+      if(dbFlag == 2) {
+        new JdbcRDD(sqlContext.sparkContext, getConnection, getSql(), Integer.MAX_VALUE, 0, numPartitions, flatValue)
+      }else{
+        new JdbcRDD(sqlContext.sparkContext, getConnection, getSql(), 0, Integer.MAX_VALUE, numPartitions, flatValue)
+      }
   }
 
   private case class SchemaType(dataType:DataType, nullable:Boolean)
-
-  //get database connection
-  def getConnection() = {
-    Class.forName("com.mysql.jdbc.Driver").newInstance()
-    DriverManager.getConnection(url, user, password)
-  }
 
   def flatValue(result: ResultSet) = {
     val values = new ArrayBuffer[Any]()
@@ -121,6 +132,36 @@ case class JDBCRelation(@transient val jdbcProps:Map[String,String])(@transient 
     })
     str.mkString(",")
   }
+
+  def getSql() = {
+
+    var whereCondition = ""
+    if(where != ""){
+      whereCondition += " WHERE " + where
+    }
+
+    val tmp = "select " + queryColumns + " FROM " + jdbcTableName +  whereCondition
+    println("~~~~~~~~~~~~~~dbFlag:~~~~~~~~~~"+dbFlag)
+    val result = dbFlag match {
+      case 1 => tmp + " LIMIT ?,?"
+      case 2 =>"SELECT * FROM (SELECT a.*, rownum as rnum FROM ("+tmp+") a WHERE rownum <=? ) WHERE rnum >= ?"
+      case 3 =>  "SELECT * FROM (SELECT t.*, row_number() over() rn from ("+tmp+") t ) a1 WHERE a1.rn BETWEEN ? AND ?"
+      case _ => "unsupported db driver"
+    }
+    //println("~~~~~~~~~~~driver : " + getDriverName(url) + " , dbFlag is: " + dbFlag + " , sql is: " + sql+ " , tmp is: " + tmp)
+    println(result  + "!!!!!!!!!!!!!!!!!!!!!!!")
+    result
+  }
+
+  //get database connection
+  def getConnection() = {
+    if(driverName == ""){
+      sys.error("not supported driver.")
+    } else {
+      Class.forName(driverName).newInstance()
+      DriverManager.getConnection(url, user, password)
+    }
+  }
 }
 
 object Resolver extends Serializable {
@@ -134,8 +175,9 @@ object Resolver extends Serializable {
       case "string" => rs.getString(columnName)
       case "int" => rs.getInt(columnName)
       case "long" => rs.getLong(columnName)
+      case "timestamp" => rs.getTimestamp(columnName)
+      case "date" => rs.getDate(columnName)
     }
     column
   }
 }
-
