@@ -15,30 +15,29 @@ import TestSQLContext._
  */
 class JDBCSuite extends FunSuite{
 
-
   test("dsl test") {
-//    val results = TestSQLContext.jdbcTable("jdbc:mysql://hadoop000:3306/hive","root","root","(TBL_ID int, TBL_NAME string, TBL_TYPE string)","TBLS", "(TBL_ID , TBL_NAME , TBL_TYPE)").select('TBL_NAME).collect()
-//    assert(results.size === 4)
+    val sql = "select a.TBL_ID, a.TBL_NAME, b.DB_ID, b.DB_LOCATION_URI from TBLS a join DBS b on a.DB_ID = b.DB_ID"
+    val results = TestSQLContext.jdbcTable("jdbc:mysql://hadoop000:3306/hive","root","root",sql)
+    results.registerTempTable("a")
+    TestSQLContext.sql("select * from a").collect.foreach(println)
+
+
   }
 
-  test("sql test") {
+
+  test("abc") {
     sql(
       s"""
-        |CREATE TEMPORARY TABLE jdbc_table
+        |CREATE TEMPORARY TABLE spark_tbls
         |USING com.luogankun.spark.jdbc
         |OPTIONS (
-        |  sparksql_table_schema  '(TBL_ID int, TBL_NAME string, TBL_TYPE string, DB_ID int)',
-        |  jdbc_table_name    'TBLS',
-        |  jdbc_table_schema '(TBL_ID , TBL_NAME , TBL_TYPE, DB_ID)',
-        |  url    'jdbc:mysql://hadoop000:3306/hive',
-        |  user    'root',
-        |  password    'root',
-        |  num_partitions  '5',
-        |  where 'TBL_ID>8'
+        |  url 'jdbc:mysql://hadoop000:3306/test',
+        |  user 'root',
+        |  password 'root',
+        |  sql "select id, name from city"
         |)""".stripMargin)
 
-    sql("SELECT TBL_NAME, DB_ID FROM jdbc_table").collect.foreach(println)
-
-    assert(sql("SELECT * FROM jdbc_table").collect().size == 2 )
+    sql("SELECT id, name FROM spark_tbls").collect.foreach(println)
   }
+
 }
