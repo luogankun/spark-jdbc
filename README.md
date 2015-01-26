@@ -12,18 +12,40 @@ The spark-jdbc assembly jar file can also be added to a Spark using the `--jars`
 $ bin/spark-sql --jars spark-jdbc_2.10-0.1.jar
 ```
 
-```sql
+```mysql
 CREATE TEMPORARY TABLE jdbc_table
 USING com.luogankun.spark.jdbc
 OPTIONS (
-  sparksql_table_schema  '(TBL_ID int, TBL_NAME string, TBL_TYPE string, DB_ID int)',
-  jdbc_table_name    'TBLS',
-  jdbc_table_schema '(TBL_ID , TBL_NAME , TBL_TYPE, DB_ID)',
-  url    'jdbc:mysql://hadoop000:3306/hive',
-  user    'root',
-  password    'root',
-  num_partitions  '5',
-  where 'TBL_ID>8'
+url    'jdbc:mysql://hadoop000:3306/hive',
+user    'root',
+password    'root',
+sql 'select TBL_ID,TBL_NAME,TBL_TYPE FROM TBLS'
+);
+
+SELECT * FROM jdbc_table;
+```
+
+```oracle
+CREATE TEMPORARY TABLE jdbc_table
+USING com.luogankun.spark.jdbc
+OPTIONS (
+url    'jdbc:oracle:thin:@hadoop000:1521/ora11g',
+user    'coc',
+password    'coc',
+sql 'select HISTORY_ID, APPROVE_ROLE_ID, APPROVE_OPINION from CI_APPROVE_HISTORY'
+);
+
+SELECT * FROM jdbc_table;
+```
+
+```db2
+CREATE TEMPORARY TABLE jdbc_table
+USING com.luogankun.spark.jdbc
+OPTIONS (
+url    'jdbc:db2://hadoop000:60000/CI',
+user    'ci',
+password    'ci',
+sql 'select LABEL_ID from coc.CI_APPROVE_STATUS'
 );
 
 SELECT * FROM jdbc_table;
