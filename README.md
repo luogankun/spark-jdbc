@@ -45,7 +45,7 @@ OPTIONS (
 url    'jdbc:db2://hadoop000:60000/CI',
 user    'ci',
 password    'ci',
-sql 'select LABEL_ID from coc.CI_APPROVE_STATUS'
+sql 'select LABEL_ID from coc.CI_LABEL_EXT_INFO'
 );
 
 SELECT * FROM jdbc_table;

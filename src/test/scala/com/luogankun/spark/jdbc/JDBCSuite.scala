@@ -25,7 +25,7 @@ class JDBCSuite extends FunSuite{
   }
 
 
-  test("abc") {
+  test("mysql") {
     sql(
       s"""
         |CREATE TEMPORARY TABLE spark_tbls
@@ -38,6 +38,21 @@ class JDBCSuite extends FunSuite{
         |)""".stripMargin)
 
     sql("SELECT id, name FROM spark_tbls").collect.foreach(println)
+  }
+
+  test("db2") {
+    sql(
+      s"""
+        |CREATE TEMPORARY TABLE spark_tbls
+        |USING com.luogankun.spark.jdbc
+        |OPTIONS (
+        |  url 'jdbc:db2://10.1.253.77:60000/CI',
+        |  user 'ci',
+        |  password 'ci',
+        |  sql "select * from COC.CI_LABEL_EXT_INFO"
+        |)""".stripMargin)
+
+    sql("SELECT * FROM spark_tbls").collect.foreach(println)
   }
 
 }
