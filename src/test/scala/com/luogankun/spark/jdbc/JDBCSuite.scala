@@ -46,7 +46,7 @@ class JDBCSuite extends FunSuite{
         |CREATE TEMPORARY TABLE spark_tbls
         |USING com.luogankun.spark.jdbc
         |OPTIONS (
-        |  url 'jdbc:db2://10.1.253.77:60000/CI',
+        |  url 'jdbc:db2://hadoop000:60000/CI',
         |  user 'ci',
         |  password 'ci',
         |  sql "select * from COC.CI_LABEL_EXT_INFO"
