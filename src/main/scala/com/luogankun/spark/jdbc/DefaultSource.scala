@@ -68,6 +68,7 @@ case class JDBCRelation(@transient val jdbcProps: Map[String, String])(@transien
         case "string" => SchemaType(StringType, nullable = false)
         case "varchar" => SchemaType(StringType, nullable = false)
         case "varchar2" => SchemaType(StringType, nullable = false)
+        case "char" => SchemaType(StringType, nullable = false)
         case "int" => SchemaType(IntegerType, nullable = false)
         case "smallint" => SchemaType(IntegerType, nullable = false)
         case "long" => SchemaType(LongType, nullable = false)
@@ -124,6 +125,7 @@ object Resolver extends Serializable {
   private def resolveColumn(rs: ResultSet, columnName: String, resultType: String): Any = {
     val column = resultType.toLowerCase match {
       case "string" => rs.getString(columnName)
+      case "char" => rs.getString(columnName)
       case "varchar" => rs.getString(columnName)
       case "varchar2" => rs.getString(columnName)
       case "int" => rs.getInt(columnName)
